@@ -1,8 +1,4 @@
-# Разрfrom telnetlib import GA
-from importlib.util import find_spec
-from pickle import FALSE
-from telnetlib import GA
-from turtle import back
+# Разрfrom telnetlib import G
 from pygame import *
 
 class GameSprite(sprite.Sprite):
@@ -23,10 +19,42 @@ class Player(GameSprite):
         self.x_speed = player_x_speed
         self.y_speed = player_y_speed
     def update(self):
-        self.rect.x += self.x_speed
-        self.rect.y += self.y_speed
+        if packman.rect.x <= window_width-80 and packman.x_speed > 0 or packman.rect.x >= 0 and packman.x_speed < 0:
+            self.rect.x += self.x_speed
+        platforms_touched = sprite.spritecollide(self, barriers, False)
+        if self.x_speed > 0:
+            for p in platforms_touched:
+                self.rect.right = min(self.rect.right, p.rect.left)
+        elif self.x_speed < 0:
+            for p in platforms_touched:
+                self.rect.left = max(self.rect.left, p.rect.right)
+        if packman.rect.y <= window_height-80 and packman.y_speed > 0 or packman.rect.y >= 0 and packman.y_speed < 0:
+            self.rect.y += self.y_speed
+        platforms_touched = sprite.spritecollide(self, barriers, False)
+        if self.y_speed > 0:
+            for p in platforms_touched:
+                self.y_speed = 0
+                if p.rect.top < self.rect.bottom:
+                    self.rect.bottom = p.rect.top
+        elif self.y_speed < 0:
+            for p in platforms_touched:
+                self.y_speed = 0
+                self.rect.top = max(self.rect.top, p.rect.bottom)
 
+class Enemy(GameSprite):
+    def __init__(self, enemy_image, enemy_x, enemy_y, enemy_size_x, enemy_size_y, enemy_speed):
+        GameSprite().__init__(self, enemy_image, enemy_x, enemy_y, enemy_size_x, enemy_size_y)
 
+        self.speed = enemy_speed
+    def update(self):
+        if self.rect.x <= 420:
+            self.side = "right"
+        if self.rect.x >= window_width - 85:
+            self.side = "left"
+        if self.side == "left":
+            self.rect.x -= self.speed
+        else:
+            self.rect.x += self.speed
 
 
 window_width = 700
@@ -66,6 +94,7 @@ while run:
                 packman.y_speed = -5
             elif e.key == K_DOWN:
                 packman.y_speed = 5
+
         elif e.type == KEYUP:
            if e.key == K_LEFT :
                packman.x_speed = 0
@@ -78,14 +107,14 @@ while run:
 
     if not finish:
         window.fill((119, 210, 223))
-        w1.reset()
-        w2.reset()
-        barriers.draw(window)
-    
-        monster.reset()
-        final_sprite.reset()
-        packman.reset()
         packman.update()
+        monster.update()
+
+        packman.reset()
+        monster.reset()
+
+        barriers.draw(window)
+        final_sprite.reset()
         if sprite.collide_rect(packman, monster):
             finish = True
             img = image.load('game-over_1.png',)
