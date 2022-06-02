@@ -23,3 +23,4 @@ I am a beginner python developer.
 
 
 ![first](picturesqeq/screen(1).png)
+![second](picturesqeq/screen(2).png)
